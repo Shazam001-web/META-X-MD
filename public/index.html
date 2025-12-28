@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>META MD | Pair Web</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background: #121212; color: #fff; padding: 20px; }
+    h1 { color: #00ff99; }
+    .tagline { color: #aaa; }
+    input { padding: 12px; margin: 15px; width: 250px; border-radius: 8px; border: none; }
+    button { padding: 12px 30px; background: #00ff99; color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    #message { margin: 20px; font-size: 18px; min-height: 50px; }
+    #code { font-size: 32px; color: #00ff99; margin: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>META MD</h1>
+  <p class="tagline">Advanced WhatsApp Bot Pairing Interface</p>
+  <input type="text" id="phone" placeholder="Phone number without + (e.g. 1234567890)">
+  <br>
+  <button id="pairBtn">Pair Device</button>
+  <div id="message">Waiting for connection...</div>
+  <div id="code"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const phoneInput = document.getElementById('phone');
+    const pairBtn = document.getElementById('pairBtn');
+    const messageDiv = document.getElementById('message');
+    const codeDiv = document.getElementById('code');
+
+    socket.on('message', (msg) => {
+      messageDiv.innerHTML = msg.replace(/\n/g, '<br>');
+    });
+
+    socket.on('code', (code) => {
+      codeDiv.textContent = code;
+    });
+
+    socket.on('connected', (isConnected) => {
+      pairBtn.disabled = isConnected;
+      pairBtn.textContent = isConnected ? 'Connected ✓' : 'Pair Device';
+    });
+
+    pairBtn.addEventListener('click', () => {
+      const phone = phoneInput.value.trim();
+      if (!phone) {
+        messageDiv.textContent = 'Please enter a phone number.';
+        return;
+      }
+      codeDiv.textContent = '';
+      socket.emit('pair', phone);
+    });
+  </script>
+</body>
+</html>
